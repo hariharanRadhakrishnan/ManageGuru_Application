@@ -1,0 +1,1 @@
+This section should contain the codes for cloud implementation and also almalytics part of the project
