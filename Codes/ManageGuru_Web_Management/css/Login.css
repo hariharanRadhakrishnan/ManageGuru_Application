@@ -1,0 +1,129 @@
+
+body {
+  font-family: 'open sans', helvetica, arial, sans;
+}
+
+*{box-sizing:border-box;}
+
+#heading
+{
+	background-color: white;
+	position:relative;
+	height: 100%;
+	background-size: cover;
+
+
+}
+
+#login
+{
+	background: grey;
+	background-image: url('../images/back.jpg');
+	background-size: cover;
+	position:relative;
+	height: 100%;
+
+}
+
+@grey:#2a2a2a;
+@blue:#1fb5bf;
+.log-form {
+  width: 75%;
+  min-width: 320px;
+  max-width: 475px;
+  background: #fff;
+  position: relative;
+  top: 25em;
+  left: 10em;
+}
+  
+form {
+display: block;
+width: 100%;
+padding: 2em;
+}
+
+h2 {
+width: 100%;
+font-family: 'open sans condensed';
+font-size: 1.35em;
+display: block;
+margin-left: 1.5em;
+padding-top: 1.5em;
+width: 100%;
+padding-bottom: 0;
+text-transform: uppercase;
+border: 1px solid darken(@grey, 5%);
+font-weight: 200;
+}
+
+input {
+display: block;
+width: 100%;
+margin-bottom: 2em;
+
+
+}
+
+#title
+{
+	width: 100%;
+	font-family: 'Oswald Bold';
+	color: White;
+	font-size: 5.35em;
+	display: block;
+	margin-left: 0.5em;
+	padding-top: 0.5em;
+	margin-bottom: 1.5em;
+	width: 100%;
+	padding-bottom: 0;
+	font-weight: 200;
+	color: #33AFFF;
+
+}
+
+#welcome
+{
+	width: 100%;
+	font-size: 2em;
+	display: block;
+	margin-left: 1.5em;
+	padding-top: 0.5em;
+	margin-bottom: 5em;
+	width: 100%;
+	padding-bottom: 0;
+	font-weight: 200;
+	color: Black;
+
+
+}
+
+#features
+{
+
+	position:relative;
+	height: 20%;
+	margin-left: 3.5em;
+	width: 40%;
+	margin-bottom: 3em;
+
+}
+
+
+
+i {
+    font-size: 18em;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
