@@ -26,9 +26,106 @@
  				$("#inventory").removeClass("bg-info");
  			});
  		}
+ 		function loadInventoryTable()
+ 		{
+ 			$("#inventory-table").html("");
+ 			$("#type-inventory").html("<option value=''>Choose Item Type</option>");
+ 			$.get('php/loadinventory.php',function(data){
+ 				table_content_inventory = JSON.parse(data)
+ 				console.log(table_content_inventory)
+ 				var types = {}
+ 				for (var i = 0; i < table_content_inventory.length; i++) {
+ 					var tr = document.createElement('tr');
+ 					var td1 = document.createElement('td');
+ 					var td2 = document.createElement('td');
+ 					var td3 = document.createElement('td');
+ 					var td4 = document.createElement('td');
+ 					td1.innerHTML = table_content_inventory[i]['item_code'];
+ 					td2.innerHTML = table_content_inventory[i]['item_type'].toUpperCase();
+ 					td3.innerHTML = table_content_inventory[i]['item_name'].toUpperCase();
+ 					td4.innerHTML = table_content_inventory[i]['quantity'];
+ 					tr.appendChild(td1);
+ 					tr.appendChild(td2);
+ 					tr.appendChild(td3);
+ 					tr.appendChild(td4);
+ 					$("#inventory-table").append(tr);
+ 					if(!!!types[table_content_inventory[i]['item_type']])
+ 					{
+	 					var option = document.createElement("option");
+	 					option.innerHTML = table_content_inventory[i]['item_type'].toUpperCase();
+	 					option.value = table_content_inventory[i]['item_type'];
+	 					$("#type-inventory").append(option);
+	 					types[table_content_inventory[i]['item_type']] = 'done';	
+ 					}
+ 				}
+ 			});
+ 		}
+ 		function loadMenuTable()
+ 		{
+ 			$("#menu-table").html("");
+ 			$("#type-menu").html("<option value=''>Choose Dish Type</option><option value='other'>New Dish Type</option>");
+ 			var types = {}
+ 			$.get('php/loadmenu.php',function(data){
+ 				table_content_menu = JSON.parse(data)
+ 				for (var i = 0; i < table_content_menu.length; i++) {
+ 					var tr = document.createElement('tr');
+ 					var td1 = document.createElement('td');
+ 					var td2 = document.createElement('td');
+ 					var td3 = document.createElement('td');
+ 					td1.innerHTML = table_content_menu[i]['dish_type'].toUpperCase();
+ 					td2.innerHTML = table_content_menu[i]['dish_name'].toUpperCase();
+ 					td3.innerHTML = table_content_menu[i]['price'];
+ 					tr.appendChild(td1);
+ 					tr.appendChild(td2);
+ 					tr.appendChild(td3);
+ 					$("#menu-table").append(tr);
+ 					if(!!!types[table_content_menu[i]['dish_type']])
+ 					{
+	 					var option = document.createElement("option");
+	 					option.innerHTML = table_content_menu[i]['dish_type'].toUpperCase();
+	 					option.value = table_content_menu[i]['dish_type'];
+	 					$("#type-menu").append(option);
+	 					types[table_content_inventory[i]['dish_type']] = 'done';	
+ 					}
+ 				}
+ 			});
+ 		}
  		$("document").ready(function(){
+ 			loadInventoryTable();
+ 			loadMenuTable();
  			$("#menu-div").hide();
+ 			$("#new-type-div-menu").hide();
  			addListenerMenu();
+
+ 			//Type Inventory onchange
+ 			$("#type-inventory").change(function(){
+ 				var type = $("#type-inventory").val();
+ 				$("#name-inventory").html("<option value=''>Choose Item Name</option>");
+ 				for(var i=0;i<table_content_inventory.length;i++)
+ 				{
+ 					if(type == table_content_inventory[i]['item_type'])
+ 					{
+ 						var option = document.createElement("option");
+ 						option.value = table_content_inventory[i]['item_name']
+ 						option.innerHTML = table_content_inventory[i]['item_name'].toUpperCase()
+ 						$("#name-inventory").append(option)
+ 					}
+ 				}
+ 			});
+ 			
+ 			//Menu Type Change
+ 			$("#type-menu").change(function(){
+ 				var value = $("#type-menu").val();
+ 				if(value === "other")
+ 				{
+ 					$("#new-type-div-menu").show();
+ 				}
+ 				else
+ 				{
+ 					$("#new-type-div-menu").hide();	
+ 				}
+ 			});
+
  			$("#menu").click(function(){
  				if($("#menu").attr("data-set") == "deactive")
  				{
@@ -40,8 +137,7 @@
  					$("#inventory").removeClass("bg-primary");
  					$("#menu").addClass("bg-primary");
  					$("#inventory-div").fadeToggle(100,'linear',function(){$("#menu-div").fadeToggle(100)});
- 					$('#management').html("Menu Management")
- 					
+ 					$('#management').html("Menu Management") 					
  				}
  			});
  			$("#inventory").click(function(){
@@ -58,6 +154,103 @@
  					$('#management').html("Inventory Management")
  				}
  			});
+
+ 			$("#update-inventory").click(function(){
+ 				var type = $("#type-inventory").val()
+ 				if(type == "")
+ 				{
+ 					alert("Update: Please Choose Item Type")
+ 					return
+ 				}
+ 				var name = $("#name-inventory").val()
+ 				if(name == "")
+ 				{
+ 					alert("Update: Please Choose Item Name")
+ 					return
+ 				}
+ 				var quantity = $("#quantity-inventory").val()
+ 				if(quantity == '')
+ 				{
+ 					alert("Update: Quantity Unknown")
+ 					return
+ 				}
+ 				$.post('php/updateinventory.php',{'item_type':type,'item_name':name,'quantity':quantity},function(data,status){loadInventoryTable()})
+ 			});
+ 			$("#add-inventory").click(function(){
+ 				var type = ($("#add-type-inventory").val()).toLowerCase()
+ 				if(type == "")
+ 				{
+ 					alert("Add: Please Choose Item Type")
+ 					return
+ 				}
+ 				var name = ($("#add-name-inventory").val()).toLowerCase()
+ 				if(name == "")
+ 				{
+ 					alert("Add: Please Choose Item Name")
+ 					return
+ 				}
+ 				var quantity = $("#add-quantity-inventory").val()
+ 				if(quantity == '')
+ 				{
+ 					alert("Update: Quantity Unknown")
+ 					return
+ 				}
+ 				$.post('php/addinventory.php',{'item_type':type,'item_name':name,'quantity':quantity},function(data,status){loadInventoryTable()})
+ 			});
+ 			$("#menu-add").click(function(){
+ 				var type = ($("#type-menu").val()).toLowerCase();
+ 				if(type == '')
+ 				{
+ 					alert("MENU: Dish Type Not Mentioned");
+ 					return;
+ 				}
+ 				if(type == 'other')
+ 				{
+ 					type = ($("#new-type-menu").val()).toLowerCase();
+ 					if(type == "")
+ 					{
+ 						alert("MENU: Dish Type Not Entered");
+ 						return;
+ 					}
+ 				}
+ 				var name = ($("#name-menu").val()).toLowerCase();
+ 				if(name == "")
+ 				{
+ 					alert("MENU: Dish Name Not Entered");
+ 					return;
+ 				}
+ 				var price = $("#price-menu").val()
+ 				if(price == '')
+ 				{
+ 					alert("MENU: Price not Mentioned");
+ 					return;
+ 				}
+ 				$.post("php/addmenu.php",{'dish_type':type,'dish_name':name,'price':price},function(data,status){loadMenuTable()})
+ 			});
+ 			$("#menu-delete").click(function(){
+ 				var type = ($("#type-menu").val()).toLowerCase();
+ 				if(type == '')
+ 				{
+ 					alert("MENU: Dish Type Not Mentioned");
+ 					return;
+ 				}
+ 				if(type == 'other')
+ 				{
+ 					type = ($("#new-type-menu").val()).toLowerCase();
+ 					if(type == "")
+ 					{
+ 						alert("MENU: Dish Type Not Entered");
+ 						return;
+ 					}
+ 				}
+ 				var name = ($("#name-menu").val()).toLowerCase();
+ 				if(name == "")
+ 				{
+ 					alert("MENU: Dish Name Not Entered");
+ 					return;
+ 				}
+ 				$.post("php/deletemenu.php",{'dish_type':type,'dish_name':name},function(data,status){loadMenuTable()})
+ 			});
  		});
  	</script>
 </head>
@@ -66,7 +259,7 @@
 		<div class="page-header">
 			<h1>
 				<img src="images/icon.jpg" width="100px">
-				<span class="text-primary">ManageGuru</span>: <span id="management" class="text-danger"> Inventory Management </span> 
+				<span class="text-primary">ManageGuru</span>: <span id="management" class="text-danger"> Inventory Management </span>
 			</h1>	
 		</div>		
 	</div>
@@ -97,35 +290,47 @@
 							<th>Quantity</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
-							<td>item1</td>
-							<td>itemType</td>
-							<td>item1 Name</td>
-							<td>x</td>	
-						</tr>						
+					<tbody id="inventory-table">						
 					</tbody>
 				</table>	
 			</div>
 			<div class="col-xs-offset-6 col-md-offset-6 col-lg-offset-6 col-xs-6 col-md-6 col-lg-6" style="position: fixed">				
-				<form class="form-inline">
+				<form action="" class="form-inline">
 					<h2 class="text-warning">Update List</h2>
 					<div class="form-group">
-						<select class="form-control">
-							<option value="">Choose Item</option>
-							<option>item1</option>
-							<option>item2</option>
-							<option>item3</option>
+						<select id="type-inventory" class="form-control">
+							<option value="">Choose Item Type</option>
 						</select>		
 					</div>
 					<div class="form-group">
-						<input type="number" class="form-control" name="quant" placeholder="Quantity">
+						<select id="name-inventory" class="form-control">
+							<option value="">Choose Item Name</option>
+						</select>		
 					</div>
 					<div class="form-group">
-						<button class="btn btn-success">Update</button>		
+						<input id="quantity-inventory" type="number" class="form-control" placeholder="Quantity" min="0" step="0.1">
+					</div>
+					<div class="form-group">
+						<button id="update-inventory" type="button" class="btn btn-success">Update</button>		
 					</div>					
 				</form>
 				
+				<form class="form-inline">
+					<h2 class="text-warning">Add to List</h2>
+					<div class="form-group">
+						<input id="add-type-inventory" class="form-control" type="text" placeholder="Enter Item Type">		
+					</div>
+					<div class="form-group">
+						<input id="add-name-inventory" type="text" class="form-control" placeholder="Item Name">		
+					</div>
+					<div class="form-group">
+						<input id="add-quantity-inventory" type="number" class="form-control" name="quant" placeholder="Quantity" min="0" step="0.1">
+					</div>
+					<div class="form-group">
+						<button id="add-inventory" type="button" class="btn btn-success">Add</button>
+					</div>					
+				</form>
+
 				<form>
 					<h2 class="text-warning">Place Order Request</h2>
 					<div class="form-group">
@@ -143,16 +348,17 @@
 						<input class="form-control" type="text" placeholder="Item Code">	
 					</div>
 					<div class="form-group">
-						<input class="form-control" type="number" placeholder="Quantity"></input>		
+						<input class="form-control" type="number" placeholder="Quantity"></input>	
 					</div>
 					<div class="form-group">
-						<button class="btn btn-success">Request</button>
+						<button type="button" class="btn btn-success">Request</button>
 					</div>
 				</form>				
 			</div>
 		</div>
 	</div>
 
+	<!-- Menu Div -->
 	<div id="menu-div" class="container-fluid">
 		<div class="row">
 			<div class="col-xs-6 col-md-6 col-lg-6">
@@ -162,13 +368,10 @@
 						<tr>
 							<th>Dish Type</th>
 							<th>Dish Name</th>
+							<th>Price</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
-							<td>itemType</td>
-							<td>item1 Name</td>	
-						</tr>						
+					<tbody id="menu-table">						
 					</tbody>
 				</table>	
 			</div>
@@ -176,24 +379,27 @@
 				<form>
 					<h2 class="text-warning">Add/Delete Item</h2>
 					<div class="form-group">
-						<select class="form-control">
+						<select id="type-menu" class="form-control">
 							<option value="">Choose Dish Type</option>
-							<option>item1</option>
-							<option>item2</option>
-							<option>item3</option>
+							<option value="other">New Dish Type</option>
 						</select>		
 					</div>
-					<div class="form-group">
-						<input type="text" class="form-control" placeholder="Dish Name">
+					<div id="new-type-div-menu" class="form-group">
+						<input id="new-type-menu" type="text" class="form-control" placeholder="Enter Type">
 					</div>
-
+					<div class="form-group">
+						<input id="name-menu" type="text" class="form-control" placeholder="Dish Name">
+					</div>
+					<div class="form-group">
+						<input id="price-menu" type="number" class="form-control" placeholder="Dish Price" min='0'>
+					</div>
 					<div class="form-group">
 						<div class="row">
 							<div class="col-lg-1 col-md-1">
-								<button class="btn btn-success">Add</button>		
+								<button id="menu-add" type="button" class="btn btn-success">Add</button>		
 							</div>
 							<div class="col-lg-1 col-md-1">
-								<button class="btn btn-success">Delete</button>		
+								<button id="menu-delete" type="button" class="btn btn-success">Delete</button>		
 							</div>
 						</div>								
 					</div>					
