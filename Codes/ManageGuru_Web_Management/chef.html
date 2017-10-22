@@ -7,6 +7,13 @@
   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ 	<style type="text/css">
+ 		body, html
+ 		{
+ 			height: 100%;
+ 			width: 100%;
+ 		}
+ 	</style>
  	<script type="text/javascript">
  		function addListenerMenu()
  		{
@@ -32,7 +39,6 @@
  			$("#type-inventory").html("<option value=''>Choose Item Type</option>");
  			$.get('php/loadinventory.php',function(data){
  				table_content_inventory = JSON.parse(data)
- 				console.log(table_content_inventory)
  				var types = {}
  				for (var i = 0; i < table_content_inventory.length; i++) {
  					var tr = document.createElement('tr');
@@ -90,6 +96,34 @@
  				}
  			});
  		}
+ 		function placeOrder()
+ 		{
+ 			var type = ($("#order-type").val()).toLowerCase();
+ 			if(type=="")
+ 			{
+ 				alert("Placing Order: Enter Type");
+ 				return
+ 			}
+ 			var name = ($("#order-name").val()).toLowerCase();
+ 			if(name=="")
+ 			{
+ 				alert("Placing Order: Enter Name");
+ 				return
+ 			}
+ 			var quant = $("#order-qaunt").val();
+ 			if(quant == '')
+ 			{
+ 				alert("Placing Order: Enter Quantity");
+ 				return
+ 			}
+ 			$.post('php/addinventoryorder.php',{'item_type':type,'item_name':name,'quantity':quant},function(data){
+ 				if(!!data)
+ 				{
+ 					data = JSON.parse(data);
+ 					alert("ORDER PLACED!\nItem Name : "+data['item_name']+"\nItem Type : "+data['item_type']+"\nQuantity : "+data['quant'])
+ 				}
+ 			});	
+ 		}
  		$("document").ready(function(){
  			loadInventoryTable();
  			loadMenuTable();
@@ -137,7 +171,7 @@
  					$("#inventory").removeClass("bg-primary");
  					$("#menu").addClass("bg-primary");
  					$("#inventory-div").fadeToggle(100,'linear',function(){$("#menu-div").fadeToggle(100)});
- 					$('#management').html("Menu Management") 					
+ 					$('#management').html("Menu Management");					
  				}
  			});
  			$("#inventory").click(function(){
@@ -251,6 +285,31 @@
  				}
  				$.post("php/deletemenu.php",{'dish_type':type,'dish_name':name},function(data,status){loadMenuTable()})
  			});
+ 			base_top = parseFloat($("#fixed-form").css('top'));
+ 			//console.log(base_top,$(window).scrollTop())
+ 			previous_top = 0; 			
+ 			//console.log(base_top2,$(window).scrollTop())
+ 			previous_top2 = 0;
+ 			$(window).scroll(function(){
+ 				var scroll_value = $(window).scrollTop();
+ 				var current_top = parseFloat($("#fixed-form").css('top'));
+ 				var difference = previous_top - scroll_value;
+ 				if((current_top+difference) >= 0 && (current_top+difference) <= base_top)
+ 				{
+	 				$("#fixed-form").css('top',(current_top+1.5*difference)+'px')
+ 				}
+ 				previous_top = scroll_value;
+ 				var scroll_value2 = $(window).scrollTop();
+ 				var current_top2 = parseFloat($("#fixed-form2").css('top'));
+ 				if(previous_top2 == 0)
+ 					base_top2 = parseFloat($("#fixed-form2").css('top'));
+ 				var difference2 = previous_top2 - scroll_value2;
+ 				if((current_top2+difference2) >= 0 && (current_top2+difference2) <= base_top2)
+ 				{
+	 				$("#fixed-form2").css('top',(current_top2+1.5*difference2)+'px')
+ 				}
+ 				previous_top2 = scroll_value2;
+ 			});
  		});
  	</script>
 </head>
@@ -294,7 +353,7 @@
 					</tbody>
 				</table>	
 			</div>
-			<div class="col-xs-offset-6 col-md-offset-6 col-lg-offset-6 col-xs-6 col-md-6 col-lg-6" style="position: fixed">				
+			<div id="fixed-form" class="col-xs-offset-6 col-md-offset-6 col-lg-offset-6 col-xs-6 col-md-6 col-lg-6" style="position: fixed; overflow: scroll; height: 100%;">				
 				<form action="" class="form-inline">
 					<h2 class="text-warning">Update List</h2>
 					<div class="form-group">
@@ -334,24 +393,16 @@
 				<form>
 					<h2 class="text-warning">Place Order Request</h2>
 					<div class="form-group">
-						<select class="form-control">
-							<option value="">choose type</option>
-							<option>Groc</option>
-							<option>Fruits n Veg</option>
-							<option>Meat</option>
-						</select>		
+						<input id="order-type" type="text" class="form-control" placeholder="Item Type">		
 					</div>
 					<div class="form-group">
-						<input class="form-control" type="text" placeholder="Item Name">
+						<input id="order-name" class="form-control" type="text" placeholder="Item Name">
 					</div>
 					<div class="form-group">
-						<input class="form-control" type="text" placeholder="Item Code">	
+						<input id="order-qaunt" class="form-control" type="number" placeholder="Quantity"></input>	
 					</div>
 					<div class="form-group">
-						<input class="form-control" type="number" placeholder="Quantity"></input>	
-					</div>
-					<div class="form-group">
-						<button type="button" class="btn btn-success">Request</button>
+						<button type="button" class="btn btn-success" onclick="placeOrder()">Request</button>
 					</div>
 				</form>				
 			</div>
@@ -375,7 +426,7 @@
 					</tbody>
 				</table>	
 			</div>
-			<div class="col-xs-offset-6 col-md-offset-6 col-lg-offset-6 col-xs-6 col-md-6 col-lg-6" style="position: fixed">				
+			<div id="fixed-form2" class="col-xs-offset-6 col-md-offset-6 col-lg-offset-6 col-xs-6 col-md-6 col-lg-6" style="position: fixed;overflow: scroll;height: 100%">				
 				<form>
 					<h2 class="text-warning">Add/Delete Item</h2>
 					<div class="form-group">
