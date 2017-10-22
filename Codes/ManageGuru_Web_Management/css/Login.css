@@ -1,6 +1,6 @@
-
-body {
-  font-family: 'open sans', helvetica, arial, sans;
+body
+{
+	font-family: 'open sans', helvetica, arial, sans;
 }
 
 *{box-sizing:border-box;}
@@ -8,19 +8,16 @@ body {
 #heading
 {
 	background-color: white;
-	position:relative;
 	height: 100%;
-	background-size: cover;
-
-
 }
 
 #login
 {
+	position: fixed;
+	display: table;
 	background: grey;
 	background-image: url('../images/back.jpg');
 	background-size: cover;
-	position:relative;
 	height: 100%;
 
 }
@@ -28,41 +25,53 @@ body {
 @grey:#2a2a2a;
 @blue:#1fb5bf;
 .log-form {
-  width: 75%;
-  min-width: 320px;
-  max-width: 475px;
-  background: #fff;
-  position: relative;
-  top: 25em;
-  left: 10em;
+	display: table-row;
+	width: 75%;
+	min-width: 320px;
+	max-width: 475px;
+	border-radius: 20%;
+	background-color: rgba(255, 255, 255, 0.7);
+}
+.table
+{
+	display: table;
+	height: 60%;
+}
+.table-row
+{
+	display: table-row;
+	height: 100%;
+}
+.vertical-center
+{
+	display: table-cell;
+	vertical-align: middle;
 }
   
 form {
-display: block;
-width: 100%;
-padding: 2em;
+	display: block;
+	width: 100%;
+	padding: 2em;
 }
 
-h2 {
-width: 100%;
-font-family: 'open sans condensed';
-font-size: 1.35em;
-display: block;
-margin-left: 1.5em;
-padding-top: 1.5em;
-width: 100%;
-padding-bottom: 0;
-text-transform: uppercase;
-border: 1px solid darken(@grey, 5%);
-font-weight: 200;
-}
+/*h2 {
+	width: 100%;
+	font-family: 'open sans condensed';
+	font-size: 1.35em;
+	display: block;
+	margin-left: 1.5em;
+	padding-top: 1.5em;
+	width: 100%;
+	padding-bottom: 0;
+	text-transform: uppercase;
+	border: 1px solid darken(@grey, 5%);
+	font-weight: 200;
+}*/
 
 input {
-display: block;
-width: 100%;
-margin-bottom: 2em;
-
-
+	display: block;
+	width: 100%;
+	margin-bottom: 2em;
 }
 
 #title
@@ -82,7 +91,7 @@ margin-bottom: 2em;
 
 }
 
-#welcome
+/*#welcome
 {
 	width: 100%;
 	font-size: 2em;
@@ -96,34 +105,18 @@ margin-bottom: 2em;
 	color: Black;
 
 
-}
+}*/
 
-#features
+/*#features
 {
-
 	position:relative;
 	height: 20%;
 	margin-left: 3.5em;
 	width: 40%;
 	margin-bottom: 3em;
+}*/
 
-}
-
-
-
-i {
+i
+{
     font-size: 18em;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
