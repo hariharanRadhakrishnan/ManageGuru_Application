@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Orders Entry</title>
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+  	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+ 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ 	<style type="text/css">
+ 		#tables-num tr
+ 		{
+ 			cursor: pointer;
+ 		}
+ 	</style>
+ 	<script type="text/javascript">
+ 		username = ''
+ 		if(!!localStorage.tables)
+ 		{
+ 			all_tables = ((localStorage.tables).split(',')).map(Number);
+ 		}
+ 		else
+ 			all_tables = new Array();
+ 		function addToTableList(table_num)
+ 		{
+ 			table_num = parseInt(table_num);
+ 			if(all_tables.length == 0)
+ 				all_tables.push(table_num)
+ 			else
+ 			{
+ 				for(var i=0;i<all_tables.length;i++)
+ 				{
+ 					if(all_tables[i]==table_num)
+ 						return
+ 					if(all_tables[i]>table_num)
+ 					{
+ 						break
+ 					}
+ 				}
+ 				all_tables.splice(i,0,table_num)
+
+ 			}
+ 			if(!!localStorage.tables)
+			{
+				if(localStorage.tables !== all_tables.toString())
+					localStorage.setItem("tables",all_tables.toString())
+			}
+			else
+				localStorage.setItem("tables",all_tables.toString())
+			loadChooseTables();
+ 		}
+ 		function getOrders(table_num)
+ 		{
+ 			addToTableList(table_num);
+ 			$('#table-num').html(table_num);
+ 			$.get('php/getorders.php?table_num='+table_num,function(data){
+ 				orders_table = JSON.parse(data);
+ 				$('#orders').html("");
+ 				for(var i=0;i<orders_table.length;i++)
+ 				{
+ 					var tr = document.createElement('tr');
+ 					var td2 = document.createElement('td');
+ 					var td3 = document.createElement('td');
+ 					td2.innerHTML = (orders_table[i]['dish_name']).toUpperCase();
+ 					td3.innerHTML = orders_table[i]['quantity'];
+ 					tr.appendChild(td2);
+ 					tr.appendChild(td3);
+ 					$("#orders").append(tr);
+ 				}
+ 				addOrderList();
+ 				addDeleteList();
+ 			});
+ 		}
+ 		function addOrderList()
+ 		{
+ 			$("#order-type").html("<option value=''>Choose Dish Type</option>");
+ 			$("#order-name").html("<option value=''>Choose Dish Name</option>");
+ 			$("#order-quantity").val('');
+ 			$.get("php/loadmenu.php",function(data){
+ 				menu_table = JSON.parse(data);
+ 				type_dict = {}
+ 				for(var i=0;i<menu_table.length;i++)
+ 				{
+ 					if(type_dict[menu_table[i]['dish_type']]!= undefined)
+ 					{
+ 						var option = document.createElement("option");
+	 					option.value = menu_table[i]['dish_type'];
+	 					option.innerHTML = (menu_table[i]['dish_type']).toUpperCase();
+	 					$("#order-type").append(option);
+ 					}
+ 					else
+ 					{
+ 						type_dict[menu_table[i]['dish_type']] = 1;
+ 					}	
+ 				}
+ 			});
+ 		}
+ 		function addDeleteList()
+ 		{
+ 			$("#delete-name").html("<option value=''>Choose Dish Name</option>")
+ 			$("#delete-quantity").val("")
+ 			for(var i=0;i<orders_table.length;i++)
+ 			{
+ 				var option = document.createElement("option");
+ 				option.value = orders_table[i]["dish_name"];
+ 				option.innerHTML = (orders_table[i]["dish_name"]).toUpperCase();
+ 				$("#delete-name").append(option);
+ 			}
+ 		}
+ 		function placeOrder()
+ 		{
+ 			var table_num = $("#order-table-num").val();
+ 			if(table_num == '')
+ 			{
+ 				alert("Take Order : Enter Table Num");
+ 				return
+ 			}	
+ 			var type = $("#order-type").val();
+ 			if(type == '')
+ 			{
+ 				alert("Take Order : Select Type");
+ 				return
+ 			}
+ 			var name = $("#order-name").val();
+ 			if(name == '')
+ 			{
+ 				alert("Take Order : Select Name");
+ 				return
+ 			}
+ 			var quantity = $("#order-quantity").val();
+ 			if(quantity == '')
+ 			{
+ 				alert("Take Order : Enter Quantity");
+ 				return
+ 			}
+ 			$.post("php/addorder.php",{'table_num':table_num,'dish_name':name,'dish_type':type,'quantity':quantity},function(data){
+ 				data = JSON.parse(data);
+ 				getOrders(data['table_num']);
+ 			});
+ 		}
+ 		function deleteOrder()
+ 		{
+ 			var table_num = $("#order-table-num").val();
+ 			if(table_num == '')
+ 			{
+ 				alert("Delete Order : Enter Table Num");
+ 				return
+ 			}
+ 			var type = "";
+ 			var name = $("#delete-name").val();
+ 			if(name == '')
+ 			{
+ 				alert("Delete Order : Select Name");
+ 				return
+ 			}
+ 			var quantity = $("#delete-quantity").val();
+ 			if(quantity == '')
+ 			{
+ 				alert("Delete Order : Enter Quantity");
+ 				return
+ 			}
+ 			else
+ 			{
+ 				for(var i=0;i<orders_table.length;i++)
+ 				{
+ 					if(orders_table[i]['dish_name'] == name)
+ 					{
+ 						type = orders_table[i]['dish_type']
+ 						if(orders_table[i]['quantity']- quantity < 0)
+ 						{
+ 							alert("Delete Order Failed: Can not delete order : "+ name.toUpperCase() + "\nOrdered Quantity : " + orders_table[i]['quantity'] + "\nIs Less Then\nDelete Quantity : " + quantity);
+ 							return
+ 						}
+ 					}
+ 				}
+ 			}
+ 			$.post("php/addorder.php",{'table_num':table_num,'dish_type':type,'dish_name':name,'quantity':-quantity},function(data){
+ 				data = JSON.parse(data);
+ 				getOrders(data['table_num']);
+ 			});
+ 		}
+ 		id = ""
+ 		function loadTable()
+ 		{
+ 			if(!!id)
+ 			{
+ 				clearTimeout(id)
+ 			}
+ 			var table_num = $("#order-table-num").val();
+ 			id = setTimeout(500,getOrders(table_num));
+ 		}
+ 		function chooseTable(event)
+ 		{
+ 			$("#order-table-num").val(this.value);
+ 			getOrders(this.value);
+ 		}
+ 		function loadChooseTables()
+ 		{
+ 			$("#tables-num").html("");
+ 			if(!!localStorage.tables){
+ 				table_numbers = (localStorage.tables).split(',');
+ 				table_numbers.forEach(function(data){
+ 					var tr = document.createElement("tr");
+ 					var td = document.createElement("td");
+ 					tr.value = td.innerHTML = data;
+ 					tr.onclick = chooseTable;
+ 					tr.appendChild(td);
+ 					$("#tables-num").append(tr);
+ 				});
+ 			}
+ 		}
+ 		$('document').ready(function(){
+ 			$("#order-type").change(function(){
+ 				$("#order-name").html("<option value=''>Choose Dish Name</option>");
+ 				var value = $("#order-type").val();
+ 				if(value == '')
+ 					return
+ 				for(var i=0;i<menu_table.length;i++)
+ 				{
+ 					if(value == menu_table[i]['dish_type'])
+ 					{
+ 						var option = document.createElement("option");
+ 						option.value = menu_table[i]['dish_name'];
+ 						option.innerHTML = (menu_table[i]['dish_name']).toUpperCase();
+ 						$("#order-name").append(option);
+ 					}
+ 				}
+ 			});
+ 			$("#order-table-num").change(function(){loadTable()});
+			loadChooseTables(); 			
+ 		});
+ 	</script>
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="page-header">
+			<h1>
+				<img src="images/icon.jpg" width="100px">
+				<span class="text-primary">ManageGuru</span>: <span id="management" class="text-danger"> Orders</span>
+			</h1>	
+		</div>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-sm-4 col-md-4 col-lg-4">
+					<form>
+						<div class="form-group">
+							<label>Enter New Table Number</label>
+							<input type="number" class="form-control" id="order-table-num" placeholder="Enter Table Number" min="1">
+						</div>
+
+
+						<h2 class="text-warning">Take Order</h2>
+						<div class="form-group">
+							<select id="order-type" class="form-control">
+								<option value="">Choose Dish Type</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<select id="order-name" class="form-control">
+								<option value="">Choose Dish Name</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<input id="order-quantity" type="number" class="form-control" min="1" placeholder="Qauntity">
+						</div>
+						<div class="form-group">
+							<button type="button" class="btn btn-success" onclick="placeOrder()">Order</button>
+						</div>
+
+						
+						<h2 class="text-warning">Delete</h2>
+						<div class="form-group">
+							<select id="delete-name" class="form-control">
+								<option value="">Choose Dish Name</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<input id="delete-quantity" type="number" class="form-control" min="1" placeholder="Qauntity">
+						</div>
+						<div class="form-group">
+							<button type="button" class="btn btn-success" onclick="deleteOrder()">Delete</button>
+						</div>
+					</form>
+				</div>
+				<div class="col-sm-2 col-md-2 col-lg-2 text-center">
+					<h2 class="text-warning">Choose Table</h2>
+					<table id="tables" class="table table-bordered table-hover">
+						<thead>
+							<tr>
+								<th class="text-center">Tables</th>
+							</tr>
+						</thead>
+						<tbody id="tables-num">	
+						</tbody>
+					</table>
+				</div>
+				<div class="col-sm-offset-1 col-md-offset-1 col-lg-offset-1 col-sm-5 col-md-5 col-lg-5">
+					<h2 class="text-warning">Ordered Food : Table - <span id="table-num">?</span></h2>
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Dish Name</th>
+								<th>Qauntity</th>
+							</tr>
+						</thead>
+						<tbody id="orders">						
+						</tbody>
+					</table>			
+				</div>	
+			</div>
+		</div>		
+	</div>
+</body>
+</html>
