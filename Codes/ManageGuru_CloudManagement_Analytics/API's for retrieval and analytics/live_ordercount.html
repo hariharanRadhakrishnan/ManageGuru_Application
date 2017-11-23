@@ -1,0 +1,52 @@
+<html>
+	<head>
+		<style>
+				div{
+				
+				border:solid 1px black;
+				
+				}
+                
+				#main{
+				border:solid 1px black;
+				width:25%;
+				}
+		</style>
+		<script>
+        function getCount()
+        {
+            xhr=new XMLHttpRequest();
+					xhr.onreadystatechange=showCount;
+					
+					xhr.open("GET","order_count.txt",true);
+					xhr.send();  
+        }
+        
+        function showCount(){
+                            
+                            if(xhr.readyState==4 && xhr.status==200){
+                            
+                                        
+                                    res=xhr.responseText;
+                                    console.log("got response "+res);
+                                    document.getElementById("one").innerHTML=res;
+                                 
+                                    
+                                    setTimeout(getCount,3000);
+                                    
+                            }
+                  
+              
+                    }
+        
+        </script>
+	</head>
+	<body onload="getCount()">
+		<div id="main">
+			<div id="upd">Today's order count</div>
+			<div id="one">0</div>
+			
+		</div>
+	</body>
+
+</html>
