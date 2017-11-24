@@ -245,6 +245,7 @@
  			}
  		}
  		$('document').ready(function(){
+ 			$("#user_name").html(user_name)
  			$("#order-type").change(function(){
  				$("#order-name").html("<option value=''>Choose Dish Name</option>");
  				var value = $("#order-type").val();
@@ -264,11 +265,22 @@
  			$("#order-table-num").change(function(){loadTable()});
 			loadChooseTables(); 			
  		});
+ 		function logout()
+ 		{
+ 			$.post("php/logout.php",{},function(data){
+ 				alert(data);
+ 				window.open("login.html","_self");
+ 			});
+ 		}
  	</script>
 </head>
 <body>
 	<div class="container-fluid">
 		<div class="page-header">
+			<div class="form-group" style="float:right;">
+				<h4 id="user_name"></h4>
+				<button type="button" class="btn btn-danger" onclick="logout()">Log Out</button>
+			</div>
 			<h1>
 				<img src="images/icon.jpg" width="100px">
 				<span class="text-primary">ManageGuru</span>: <span id="management" class="text-danger"> Orders</span>
