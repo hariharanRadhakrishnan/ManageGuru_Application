@@ -1,67 +1,246 @@
 <html>
 <head>
 <title>Staff Account</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-  <style>
-  .box{
-	position:relative;
-	left:53%;
-	top:3.5%;
-  }
-  #title
-	{
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script src="js/md5.min.js"></script>		
+	<style>
+		.box{
 		position:relative;
-		top:60px;
-		color:#4682B4;
-		font-family:Sans-Serif;
-	}
-  </style>
+		left:53%;
+		top:3.5%;
+		}
+		#title
+		{
+			position:relative;
+			top:60px;
+			color:#4682B4;
+			font-family:Sans-Serif;
+		}
+	</style>
+	<script type="text/javascript">
+		user_name = ''
+ 		function checkLogin(){
+ 			$.get("php/checklogin.php",function(data){
+ 				if(data === 'no')
+ 				{
+ 					alert("Please Login First");
+ 					window.open("login.html","_self");
+ 				}
+ 				else
+ 				{
+ 					data = JSON.parse(data)
+ 					if(data[1] !== "setupacc")
+ 					{
+ 						alert("Not Authorised to visit the page")
+ 						window.open(data[1]+".html","_self");
+ 					}
+ 					else
+ 					{
+ 						user_name = data[0];
+ 					}	
+ 				}
+ 			});
+ 		}
+ 		checkLogin();
+		function foo(id)
+		{
+			const val = $('#'+id).val()
+			if(!val) {
+				alert(id + ' is not filled')
+			}
+			if(id.toLocaleLowerCase().indexOf('password') !== -1) return md5(val)
+			return val
+		}
+		function addUser()
+		{
+			const inputs = $('.inventoryInputs')
+			const data = {}
+			var cool = true
+			for(var i = 0; i < inputs.length; ++i) {
+				var id = inputs[i].id
+				if(!(data[id] = foo(id))) {
+					cool = false
+					break
+				}
+			}
+			if(!cool) return
+			if(data['password'] !== data['rePassword'])
+			{
+				alert("Passwords Do Not Match.")
+				return
+			}
+			$.post("php/adduser.php",data,function(res){alert(res)})
+		}
+		function inventoryStatusUpdate(e)
+		{
+			var id = e.id;
+			id = id.split("-")
+			$.post("php/updateinventorystatus.php",{"itemName":id[0],"itemType":id[1],"flag":id[2]},function(s){
+					if(s === "success")
+					{
+						$("#"+id[0]+"-"+id[1]).css({"display":"none"})
+					}
+					else
+					{
+						alert("Update Failed")
+					}
+			});
+		}
+		previousOrderData = {}
+		previousUserData = {}
+		function exists(previousOrderData,name="",type="",quant="")
+		{
+			if(type === "" && quant === "")
+			{
+				for(var i in previousOrderData)
+				{
+					if(previousOrderData[i]['username'] === name) return true
+				}
+				return false	
+			}
+			// console.log(name,type,quant)
+			for(var i in previousOrderData)
+			{
+				if(previousOrderData[i]['itemName'] === name && previousOrderData[i]['itemType'] === type && previousOrderData[i]['quantity'] === quant) return true
+			}
+			return false
+		}
+		function getOrders()
+		{
+			$.get("php/getinventoryorders.php", function(data){
+				if(data === "none")
+				{
+					return
+				}
+				var orderData = JSON.parse(data);
+				// console.log(orderData)
+				for(var i in orderData)
+				{
+					if(exists(previousOrderData,orderData[i]['itemName'],orderData[i]['itemType'],orderData[i]['quantity']))
+					{
+						continue
+					}
+					$("#inventory").append($('<div>')
+						.attr("id",orderData[i]['itemName']+"-"+orderData[i]['itemType'])
+						.append($('<h3>')
+							.attr('class', 'text-primary')
+							.html(orderData[i]['itemName'].slice(0,1).toUpperCase() + orderData[i]['itemName'].slice(1)))
+						.append($('<p>')
+							.attr("class","text-primary")
+							.html(orderData[i]['itemType'].slice(0,1).toUpperCase() + orderData[i]['itemType'].slice(1)))
+						.append($('<h4>')
+							.attr("class","text-danger")
+							.html("Quant : " +orderData[i]['quantity']))
+						.append($("<button>")
+							.attr("class","btn btn-success")
+							.attr('id',orderData[i]['itemName']+"-"+orderData[i]['itemType']+"-success")
+							.html("Ok")
+							.click(function(e){inventoryStatusUpdate(this)}))
+						.append($("<button>")
+							.attr("class","btn btn-danger")
+							.attr('id',orderData[i]['itemName']+"-"+orderData[i]['itemType']+"-fail")
+							.html("Cancel")
+							.click(function(e){inventoryStatusUpdate(this)}))
+						);
+				}
+				previousOrderData = orderData;
+			});
+		}
+
+		function getUsers()
+		{
+			$.get("php/getuser.php", function(data){
+				if(data === "none")
+				{
+					$("#users").html('')
+					return
+				}
+				var userData = JSON.parse(data);
+				// console.log(userData)
+				for(var i in userData)
+				{
+					if(exists(previousUserData,userData[i]['username']))
+					{
+						continue
+					}
+					$("#users").append($("<tr>")
+						.append($("<td>")
+							.html(userData[i]['username'].slice(0,1).toUpperCase() + userData[i]['username'].slice(1)))
+						.append($("<td>")
+							.html(userData[i]['usertype'].slice(0,1).toUpperCase() + userData[i]['usertype'].slice(1)))
+					);
+				}
+				tr = $("#users tr")
+				for(var i =0; i < tr.length;i++)
+				{
+					child = tr[i].children[0]
+					if(!exists(userData,$(child).html().toLocaleLowerCase()))
+					{
+						// console.log($(child).html().toLocaleLowerCase())
+						$(tr[i]).remove()
+					}	
+				}
+				previousUserData = userData;
+			});	
+		}
+
+		$(document).ready(function(){
+			setInterval(getOrders,1000);
+			setInterval(getUsers,1000);
+		});
+	</script>
 </head>
 <body>
-<img src="logo.jpg" height="150px" width="150px" align="left"/> <h1 id="title">ManageGuru: Staff Accounts</h1>
-
-<table class="table table-bordered" style="width:45%; position:relative;top:22%;left:-9%;">
-<caption style="color:#00bfff;font-family:Georgia;font-size:20px;">Current Staff</caption>
-    <thead>
-	<th>Staff Id</th>
-	<th>Staff Name</th>
-	<th>Designation</th>
-	<th>Phone Number</th>
-	<th>Authorization Level</th>
-</tr>
-</thead>
-</table>
-<div class="box" >
-    <div  class="form">
-    		<form id="setupform" action=""> <br><br> 
-			<p style="color:#00bfff;font-family:Georgia;font-size:20px;">Set Up new Account</p>
-    			<p class="setup"><label>Name</label> <br>
-    			<input id="fname" name="fname" placeholder="First name" required="" type="text"> </p>
-				<br>
-    			 
-    			<p class="setup"><label>Phone Number</label><br>
-    			<input id="phone" name="mobno" placeholder="Phone number" required="" type="text"> </p> 
-                <br>
-                <p class="setup"><label>Designation</label> <br>
-    			<input id="des" name="des" placeholder="Designation" required="" type="text"> </p> 
-    			<br>
-				
-				<div class="setup">
-				  <label for="sel1">Authorization Level:</label>
-				  <select class="form-control" id="sel1" style="width:12%;">
-					<option>1</option>
-					<option>2</option>
-					<option>3</option>
-					<option>4</option>
-				  </select>
-				</div> 			
-            <br> <br>
-            <input class="sign" name="submit" id="sub" tabindex="5" value="Setup" type="submit" > 	 
-   </form> 
-  </div>       
-</div>
+	<div class="container-fluid">
+		<div class="page-header">
+			<h1>
+				<img src="images/icon.jpg" width="100px">
+				<span class="text-primary">ManageGuru</span>: <span class="text-danger"> Admin </span> 
+			</h1>	
+		</div>		
+	</div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-4 col-lg-4 col-sm-6">
+				<form>
+					<h2 class="text-warning">Add Account</h2>
+					<div class="form-group">
+						<label>Username :</label><input id="username" type="text" class="form-control inventoryInputs">
+					</div>
+					<div class="form-group">
+						<label>Password :</label><input id="password" type="password" class="form-control inventoryInputs">
+					</div>
+					<div class="form-group">
+						<label>Re-enter Password :</label><input id="rePassword" type="password" class="form-control inventoryInputs">
+					</div>
+					<div class="form-group">
+						<label>User Type :</label>
+						<select id="usertype" class="form-control inventoryInputs">
+							<option value="">Choose Option</option>
+							<option value="billing">Billing</option>
+							<option value="chef">Chef</option>
+							<option value="waiter">Waiter</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<button type="button" class="btn btn-success" onclick="addUser()">Add User</button>
+					</div>
+				</form>
+			</div>
+			<div id="inventory" class="col-md-4 col-lg-4 col-sm-6">
+				<h2 class="text-warning">Inventory Order Requests</h2>
+			</div>
+			<div class="col-md-4 col-lg-4 col-sm-6">
+				<h2 class="text-warning">All Online Users</h2>
+				<table class="table table-bordered">
+					<tbody id="users"></tbody>
+				</table>
+			</div>			
+		</div>
+	</div>
 </body>
 </html>

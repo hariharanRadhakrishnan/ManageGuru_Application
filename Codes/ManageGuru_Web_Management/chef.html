@@ -15,6 +15,30 @@
  		}
  	</style>
  	<script type="text/javascript">
+ 		user_name = ''
+ 		function checkLogin(){
+ 			$.get("php/checklogin.php",function(data){
+ 				if(data === 'no')
+ 				{
+ 					alert("Please Login First");
+ 					window.open("login.html","_self");
+ 				}
+ 				else
+ 				{
+ 					data = JSON.parse(data)
+ 					if(data[1] !== "chef")
+ 					{
+ 						alert("Not Authorised to visit the page")
+ 						window.open(data[1]+".html","_self");
+ 					}
+ 					else
+ 					{
+ 						user_name = data[0];
+ 					}	
+ 				}
+ 			});
+ 		}
+ 		checkLogin();
  		function addListenerMenu()
  		{
  			$("#menu").hover(function(){

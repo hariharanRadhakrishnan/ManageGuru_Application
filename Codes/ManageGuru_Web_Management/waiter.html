@@ -14,7 +14,30 @@
  		}
  	</style>
  	<script type="text/javascript">
- 		username = ''
+ 		user_name = ''
+ 		function checkLogin(){
+ 			$.get("php/checklogin.php",function(data){
+ 				if(data === 'no')
+ 				{
+ 					alert("Please Login First");
+ 					window.open("login.html","_self");
+ 				}
+ 				else
+ 				{
+ 					data = JSON.parse(data)
+ 					if(data[1] !== "waiter")
+ 					{
+ 						alert("Not Authorised to visit the page")
+ 						window.open(data[1]+".html","_self");
+ 					}
+ 					else
+ 					{
+ 						user_name = data[0];
+ 					}	
+ 				}
+ 			});
+ 		}
+ 		checkLogin();
  		if(!!localStorage.tables)
  		{
  			all_tables = ((localStorage.tables).split(',')).map(Number);
@@ -24,6 +47,8 @@
  		function addToTableList(table_num)
  		{
  			table_num = parseInt(table_num);
+ 			if(table_num <= 0)
+ 				return
  			if(all_tables.length == 0)
  				all_tables.push(table_num)
  			else
@@ -61,7 +86,7 @@
  					var tr = document.createElement('tr');
  					var td2 = document.createElement('td');
  					var td3 = document.createElement('td');
- 					td2.innerHTML = (orders_table[i]['dish_name']).toUpperCase();
+ 					td2.innerHTML = orders_table[i]['dish_name'].slice(0,1).toUpperCase() + orders_table[i]['dish_name'].slice(1);
  					td3.innerHTML = orders_table[i]['quantity'];
  					tr.appendChild(td2);
  					tr.appendChild(td3);
@@ -113,6 +138,11 @@
  			if(table_num == '')
  			{
  				alert("Take Order : Enter Table Num");
+ 				return
+ 			}
+ 			if(parseInt(table_num) <= 0)
+ 			{
+ 				alert("Enter Valid Table Number");
  				return
  			}	
  			var type = $("#order-type").val();
@@ -187,6 +217,11 @@
  				clearTimeout(id)
  			}
  			var table_num = $("#order-table-num").val();
+ 			if(table_num <= 0)
+ 			{
+ 				alert("Enter Valid Table Number")
+ 				return
+ 			}
  			id = setTimeout(500,getOrders(table_num));
  		}
  		function chooseTable(event)

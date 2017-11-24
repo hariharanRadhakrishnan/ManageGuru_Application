@@ -7,6 +7,132 @@
   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ 	<script type="text/javascript">
+ 		user_name = ''
+ 		function checkLogin(){
+ 			$.get("php/checklogin.php",function(data){
+ 				if(data === 'no')
+ 				{
+ 					alert("Please Login First");
+ 					window.open("login.html","_self");
+ 				}
+ 				else
+ 				{
+ 					data = JSON.parse(data)
+ 					if(data[1] !== "billing")
+ 					{
+ 						alert("Not Authorised to visit the page")
+ 						window.open(data[1]+".html","_self");
+ 					}
+ 					else
+ 					{
+ 						user_name = data[0];
+ 					}	
+ 				}
+ 			});
+ 		}
+ 		checkLogin();
+ 		id = null
+ 		orderData = {}
+ 		menuData = {}
+ 		function getPrice(name,type)
+ 		{
+ 			for(var i in menuData)
+ 			{
+ 				if(menuData[i]['dish_name'] === name && menuData[i]['dish_type'] === type)
+ 					return menuData[i]['price']
+ 			}
+ 		}
+ 		function fillBillTable()
+ 		{
+ 			$("#bill").html('');
+ 			price = 0
+			sumTotal = 0		
+ 			for(var i in orderData)
+ 			{
+ 				price = getPrice(orderData[i]["dish_name"],orderData[i]["dish_type"])
+ 				totalPrice = orderData[i]["quantity"] * price;
+ 				sumTotal += totalPrice
+ 				$("#bill").append($("<tr>")
+ 					.append($("<td>")
+ 						.html(orderData[i]["dish_name"].slice(0,1).toUpperCase() + orderData[i]["dish_name"].slice(1)))
+ 					.append($("<td>")
+ 						.html(orderData[i]["quantity"]))
+ 					.append($("<td>")
+ 						.html(totalPrice))
+ 				);
+ 			}
+ 			$("#bill").append($("<tr>")
+ 					.append($("<td colspan=2 class='text-center'>")
+ 						.html("Total")
+ 						.css({"font-weight":"bold"}))
+ 					.append($("<td id='sumTotal'>")
+ 						.html(sumTotal)
+ 						.css({"font-weight":"bold"}))
+ 				);
+ 		}
+ 		function getBill(tableNum)
+ 		{
+ 			if(tableNum <= 0)
+ 			{
+ 				alert(tableNum + " : Not Valid Table Number")
+ 				return
+ 			}
+ 			$("#table_num").html(tableNum);	
+ 			$.get("php/getOrders.php?table_num="+tableNum,function(data){
+ 				// console.log(data)
+ 				orderData = JSON.parse(data);
+ 				$.get("php/loadmenu.php",function(data){
+	 				menuData = JSON.parse(data);
+	 				fillBillTable()
+	 			});
+ 			});
+ 		}
+ 		function loadTable()
+ 		{
+ 			if(!!id)
+ 			{
+ 				clearTimeout(id)
+ 			}
+ 			var table_num = $("#input_table_num").val();
+ 			id = setTimeout(500,getBill(table_num));
+ 		}
+ 		function sendBill()
+ 		{
+ 			var payment = $("select").val()
+ 			var amount = parseFloat($("#sumTotal").html())
+ 			var tableNum = parseInt($("#table_num").html())
+ 			if(!amount)
+ 			{
+ 				alert("Amount is Zero");
+ 				return
+ 			}
+ 			if(payment === "")
+ 			{
+ 				alert("Select Payment Type");
+ 				return
+ 			}
+ 			if(!tableNum)
+ 			{
+ 				alert("Table Number not choosen");
+ 				return
+ 			}
+ 			$.post("php/addBill.php",{"table_num":tableNum,"amount":amount,"payment_type":payment.toLowerCase()},function(s){
+ 				if(s==="Success")
+ 				{
+ 					alert(s)
+ 					$("#bill").html('')
+ 				}
+ 				else
+ 				{
+ 					alert("Failed")
+ 				}
+ 			});
+ 		}
+ 		$(document).ready(function(){
+ 			$("#input_table_num").change(function(){loadTable()})
+ 		});
+ 	</script>
 </head>
 <body>
 	<div class="container-fluid">
@@ -20,28 +146,20 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-xs-8 col-md-8 col-lg-8">
-
 				<h2 class="text-warning"> Enter Table Number </h2>
 					<div class="form-group">
-						<input class="form-control" type="text" placeholder="Table Number">
+						<input id="input_table_num" class="form-control" type="text" placeholder="Table Number">
 					</div>
-				<h2 class="text-warning">Orders </h2>
+				<h2 class="text-warning">Orders of - <span id="table_num">?</span></h2>
 				<table class="table table-bordered">
 					<thead>
 						<tr>
-							<th>Sl. No</th>
 							<th>Item Name</th>
 							<th>Quantity</th>
 							<th>Price for item</th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr>
-							<td>item1</td>
-							<td>itemType</td>
-							<td>item1 Name</td>
-							<td>x</td>	
-						</tr>						
+					<tbody id="bill">						
 					</tbody>
 				</table>	
 			</div>
@@ -54,18 +172,13 @@
 						<option>Credit card</option>
 						<option>Debit card</option>
 						<option>Paytm</option>
-
 					</select>		
 				</div>
-				
-				<form>
-			
+				<form>			
 					<div class="form-group">
-						<button class="btn btn-success">Request</button>
+						<button type="button" class="btn btn-success" onclick="sendBill()">Done</button>
 					</div>
-				</form>
-				
-				
+				</form>				
 			</div>
 		</div>
 	</div>

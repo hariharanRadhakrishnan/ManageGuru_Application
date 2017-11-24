@@ -9,7 +9,10 @@
 		$row = $result->fetch_assoc();
 		if($password == $row['password'])
 		{
-			$_SESSION['user_name'] = $row['user_type'];
+			$_SESSION['user_name'] = $user_name;
+			$_SESSION['user_type'] = $row['user_type'];
+			$sql = "UPDATE users SET login_time=NOW() WHERE user_name='".$_SESSION["user_name"]."'";
+			$result = $conn->query($sql);
 			echo json_encode(array("success",$row['user_type']));
 		}
 		else
