@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+   <head>
+        <title>Monthly Bills</title>
+      <style type = "text/css">
+         body  { background-color: #F0E68C } 
+         h2    { font-family: arial, sans-serif;
+                 color: blue }
+         input { background-color: blue;
+                 color: yellow;
+                 font-weight: bold }
+         #goback{position:relative;top:100px;}     
+           a:hover{
+        color:#0006CCC;
+        background:#B3B3B3;
+        }
+
+        a{
+                        text-decoration: none;
+                        color: black;
+                        }
+
+        a:active{
+            border:3px solid #000000;
+        }
+      </style>
+   </head>
+   <body>
+      <h2>Monthly Bills</h2>
+      <form method = "post" action = "monthly_bills.php">
+        <div>
+            <p>Select a month to display:
+   
+                   <select name="select" id="mySelect" >
+   
+                    <option value="8" >August</option>
+                    <option value="9" >September</option>
+                    <option value="10">October</option>
+                
+                    </select>
+             </p>
+            <input type = "submit" value = "Send Query" />
+         </div>
+       
+      </form>
+   </body>
+</html>
+
+
