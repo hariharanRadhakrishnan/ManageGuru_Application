@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
    <head>
-        <title>Monthly Bills</title>
+        <title>Monthly Bill Count</title>
       <style type = "text/css">
          body  { background-color: #F0E68C } 
          h2    { font-family: arial, sans-serif;
@@ -23,27 +23,182 @@
         a:active{
             border:3px solid #000000;
         }
+        
+        
+        .bar {
+          fill: steelblue;
+        }
+
+        .bar:hover {
+          fill: brown;
+        }
+
+        .axis--x path {
+          display: none;
+        }
+
       </style>
+      
+      <script src="https://d3js.org/d3.v4.min.js"></script>
+      
    </head>
-   <body>
-      <h2>Monthly Bills</h2>
-      <form method = "post" action = "monthly_bills.php">
+   <body onload="getBills()">
+      <h2>Number of bills generated for each day of the month</h2>
+      
+      <div id="canvas">
+        <svg width="960" height="500"></svg>
+      </div>
+      
+      
         <div>
             <p>Select a month to display:
    
-                   <select name="select" id="mySelect" >
+                   <select name="select" id="mySelect" onchange="getBills()"> <!-- drop down box to allow user to select a month-->
    
                     <option value="8" >August</option>
                     <option value="9" >September</option>
                     <option value="10">October</option>
+                    <option value="11">November</option>
                 
                     </select>
              </p>
-            <input type = "submit" value = "Send Query" />
+            <!--<input type = "submit" value = "Send Query" />-->
          </div>
        
-      </form>
-   </body>
+      
+      
+        <script>
+            
+            var canvas=document.getElementById("canvas");
+            var myVar;
+            
+            function getBills()
+            {
+                clearTimeout(myVar);
+                var e = document.getElementById("mySelect");
+                var month = e.options[e.selectedIndex].value;
+                var params="select="+month;
+                
+                console.log("Called")
+                xhr=new XMLHttpRequest();
+                xhr.onreadystatechange=showSales;		
+                xhr.open("POST","monthly_bills.php",true);
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.send(params);  
+            }
+            
+            function showSales(){
+                            
+            if(xhr.readyState==4 && xhr.status==200){
+                                                                   
+                 var arr=JSON.parse(xhr.responseText);
+                 console.log("got response ");
+                 //console.log(xhr.responseText);
+                 
+                 
+                var arr1 = arr[0];
+                var arr2=arr[1];
+                
+                canvas.innerHTML = '';     //erase the previous chart
+                
+                d3.select("#canvas").append("svg").attr("width", 960).attr("height", 500)
+                
+                var data = [];
+                for(i=0;i<arr1.length;i++)
+                {
+                    data.push({name:arr1[i],value:+arr2[i]});
+                }
+                
+                //for(i=0;i<data.length;i++)
+                //document.writeln(data[i].name+" "+data[i].value)
+            
+                var svg = d3.select("svg"),
+                margin = {top: 20, right: 20, bottom: 50, left: 50},
+                width = +svg.attr("width") - margin.left - margin.right,
+                height = +svg.attr("height") - margin.top - margin.bottom;
+                
+                var animateDuration = 700;
+                    var animateDelay = 30;
+         
+                var tooltip = d3.select("#canvas").append('div')
+                            .style('position', 'absolute')
+                            .style('background', '#f4f4f4')
+                            .style('padding', '5 15px')
+                            .style('border', '1px #333 solid')
+                            .style('border-radius', '5px')
+                            .style('opacity', '0');
+
+
+                var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+                    y = d3.scaleLinear().rangeRound([height, 0]);
+
+                var g = svg.append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+                  x.domain(data.map(function(d) { return d.name; }));
+                  y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+                  g.append("g")
+                      .attr("class", "axis axis--x")
+                      .attr("transform", "translate(0," + height + ")")
+                      .call(d3.axisBottom(x));
+
+                   svg.append("text")
+                    .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
+                    .style("text-anchor", "middle")
+                    .text("Day");
+
+                  g.append("g")
+                      .attr("class", "axis axis--y")
+                      .call(d3.axisLeft(y).ticks(10));
+                    
+                    g.append("text")
+                        .attr("transform", "rotate(-90)")
+                        .attr("y", 0 - margin.left)
+                        .attr("x",0 - (height / 2))
+                        .attr("dy", "1em")
+                        .style("text-anchor", "middle")
+                        .text("Bills generated");
+
+                      g.selectAll(".bar")
+                        .data(data)
+                        .enter().append("rect")
+                          .attr("class", "bar")
+                          .attr("x", function(d) { return x(d.name); })
+                          .attr("y", function(d) { return y(d.value); })
+                          .attr("width", x.bandwidth())
+                          .attr("height",0)
+                          .transition()
+                          .duration(700)
+                          .delay(function (d,i){ return i * 30;})
+                          .attr("height", function(d) { return height - y(d.value); });
+              
+
+                        g.selectAll('rect')	
+                        .on('mouseover', function(d){
+                            tooltip.transition()
+                                .style('opacity', 1)
+
+                            tooltip.html(d.value)
+                                .style('left', (d3.event.pageX)+'px')
+                                .style('top', (d3.event.pageY+'px'))
+                        
+
+                        })
+                        .on('mouseout', function(d){
+                            tooltip.transition()
+                                .style('opacity', 0)
+                            
+                        })
+                                   
+                
+                
+                myVar=setTimeout(getBills,15000); //periodic refresh every 15 seconds
+             }}; 
+        
+        </script>
+      </body>
 </html>
 
 

@@ -1,4 +1,5 @@
 <?php
+ header("Access-Control-Allow-Origin: *"); 
 $con = mysqli_connect("127.0.0.1:49985","azure","6#vWHD_$","manageguru");
 
 // Check connection
@@ -8,9 +9,10 @@ if (mysqli_connect_errno())
   }
 
   
-$result = mysqli_query($con,"SELECT COUNT(`order_time`) FROM orders WHERE DATE(`order_time`) = CURDATE()");
-$num_rows = mysqli_num_rows($result);
-$data["num_of_orders"] = $num_rows -1;
+$result = mysqli_query($con,"SELECT COUNT(`order_time`), order_time FROM orders WHERE DATE(`order_time`) = CURDATE()");
+$assoc = $result->fetch_assoc();
+$data["num_of_orders"] = $assoc['COUNT(`order_time`)'];
+$data["time"] = $assoc['order_time'];
 echo json_encode($data);
 $con->close();
 ?>

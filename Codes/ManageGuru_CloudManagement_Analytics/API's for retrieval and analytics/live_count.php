@@ -1,5 +1,5 @@
 <?php
-
+ header("Access-Control-Allow-Origin: *");
 		set_time_limit(0);
 		
 		for($x=0;$x<100;$x++){

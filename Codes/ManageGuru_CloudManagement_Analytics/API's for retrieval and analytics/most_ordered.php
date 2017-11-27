@@ -49,6 +49,7 @@
 <script>
 
 <?php
+ header("Access-Control-Allow-Origin: *");
 $con = mysqli_connect("127.0.0.1:49985","azure","6#vWHD_$","manageguru");
 
 // Check connection
