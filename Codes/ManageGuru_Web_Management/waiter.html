@@ -106,16 +106,13 @@
  				type_dict = {}
  				for(var i=0;i<menu_table.length;i++)
  				{
- 					if(type_dict[menu_table[i]['dish_type']]!= undefined)
+ 					if(type_dict[menu_table[i]['dish_type'].toLowerCase()] == undefined)
  					{
  						var option = document.createElement("option");
 	 					option.value = menu_table[i]['dish_type'];
 	 					option.innerHTML = (menu_table[i]['dish_type']).toUpperCase();
 	 					$("#order-type").append(option);
- 					}
- 					else
- 					{
- 						type_dict[menu_table[i]['dish_type']] = 1;
+	 					type_dict[menu_table[i]['dish_type'].toLowerCase()] = 1
  					}	
  				}
  			});

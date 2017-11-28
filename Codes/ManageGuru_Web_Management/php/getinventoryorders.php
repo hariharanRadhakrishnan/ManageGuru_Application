@@ -1,6 +1,6 @@
 <?php
 	include "connect.php";
-	$sql = "SELECT * FROM inventory_orders WHERE status=0 ORDER BY item_type,item_name";
+	$sql = "SELECT item_type, item_name, SUM(quantity) as quantity FROM inventory_orders WHERE status=0 GROUP BY item_type,item_name ORDER BY item_type,item_name";
 	$result = $conn->query($sql);
 	if($result->num_rows>0)
 	{

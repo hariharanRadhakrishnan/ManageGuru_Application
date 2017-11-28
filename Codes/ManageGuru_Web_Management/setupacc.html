@@ -9,9 +9,9 @@
 	<script src="js/md5.min.js"></script>		
 	<style>
 		.box{
-		position:relative;
-		left:53%;
-		top:3.5%;
+			position:relative;
+			left:53%;
+			top:3.5%;
 		}
 		#title
 		{
@@ -92,9 +92,9 @@
 		}
 		previousOrderData = {}
 		previousUserData = {}
-		function exists(previousOrderData,name="",type="",quant="")
+		function exists(previousOrderData,name="",type="")
 		{
-			if(type === "" && quant === "")
+			if(type === "")
 			{
 				for(var i in previousOrderData)
 				{
@@ -105,7 +105,7 @@
 			// console.log(name,type,quant)
 			for(var i in previousOrderData)
 			{
-				if(previousOrderData[i]['itemName'] === name && previousOrderData[i]['itemType'] === type && previousOrderData[i]['quantity'] === quant) return true
+				if(previousOrderData[i]['itemName'] === name && previousOrderData[i]['itemType'] === type) return true
 			}
 			return false
 		}
@@ -120,8 +120,10 @@
 				// console.log(orderData)
 				for(var i in orderData)
 				{
-					if(exists(previousOrderData,orderData[i]['itemName'],orderData[i]['itemType'],orderData[i]['quantity']))
+					if(exists(previousOrderData,orderData[i]['itemName'],orderData[i]['itemType']))
 					{
+						if(previousOrderData[i]['quantity'] !== orderData[i]['quantity'])
+							$("#"+orderData[i]['itemName']+'-'+orderData[i]['itemType']+' h4').html("Quant : "+orderData[i]['quantity'])
 						continue
 					}
 					$("#inventory").append($('<div>')
@@ -169,16 +171,16 @@
 					}
 					$("#users").append($("<tr>")
 						.append($("<td>")
-							.html(userData[i]['username'].slice(0,1).toUpperCase() + userData[i]['username'].slice(1)))
+							.html(userData[i]['username']))
 						.append($("<td>")
-							.html(userData[i]['usertype'].slice(0,1).toUpperCase() + userData[i]['usertype'].slice(1)))
+							.html(userData[i]['usertype']))
 					);
 				}
 				tr = $("#users tr")
 				for(var i =0; i < tr.length;i++)
 				{
 					child = tr[i].children[0]
-					if(!exists(userData,$(child).html().toLocaleLowerCase()))
+					if(!exists(userData,$(child).html()))
 					{
 						// console.log($(child).html().toLocaleLowerCase())
 						$(tr[i]).remove()

@@ -60,7 +60,9 @@
  		function loadInventoryTable()
  		{
  			$("#inventory-table").html("");
+ 			$("#order-type").html("");
  			$("#type-inventory").html("<option value=''>Choose Item Type</option>");
+ 			$("#order-type").html("<option value=''>Choose Item Type</option>");
  			$.get('php/loadinventory.php',function(data){
  				table_content_inventory = JSON.parse(data)
  				var types = {}
@@ -84,10 +86,17 @@
 	 					var option = document.createElement("option");
 	 					option.innerHTML = table_content_inventory[i]['item_type'].toUpperCase();
 	 					option.value = table_content_inventory[i]['item_type'];
+	 					var orderOption = option.cloneNode(true);
+	 					console.log(orderOption)
 	 					$("#type-inventory").append(option);
+	 					$("#order-type").append(orderOption);
 	 					types[table_content_inventory[i]['item_type']] = 'done';	
  					}
  				}
+ 				$("#order-type").append($("<option>")
+ 					.val("other")
+ 					.html("OTHER")
+ 				);
  			});
  		}
  		function loadMenuTable()
@@ -123,12 +132,26 @@
  		function placeOrder()
  		{
  			var type = ($("#order-type").val()).toLowerCase();
- 			if(type=="")
+ 			var name = ''
+ 			if(type =="")
  			{
  				alert("Placing Order: Enter Type");
  				return
  			}
- 			var name = ($("#order-name").val()).toLowerCase();
+ 			else if(type == "other")
+ 			{
+ 				type = $("#order-type-text").val()
+ 				if(type == '')
+ 				{
+ 					alert("Placing Order: Enter Type");
+ 					return
+ 				}
+ 				name = $('#order-name-text').val()
+ 			}
+ 			else
+ 			{
+ 				name = ($("#order-name").val()).toLowerCase();
+ 			}
  			if(name=="")
  			{
  				alert("Placing Order: Enter Name");
@@ -150,6 +173,8 @@
  		}
  		$("document").ready(function(){
  			$("#user_name").html(user_name)
+ 			$("#order-type-text").hide()
+ 			$("#order-name-text").hide()
  			loadInventoryTable();
  			loadMenuTable();
  			$("#menu-div").hide();
@@ -168,6 +193,36 @@
  						option.value = table_content_inventory[i]['item_name']
  						option.innerHTML = table_content_inventory[i]['item_name'].toUpperCase()
  						$("#name-inventory").append(option)
+ 					}
+ 				}
+ 			});
+
+ 			//Type in order request change
+ 			$("#order-type").change(function(){
+ 				var type = $("#order-type").val();
+ 				
+ 				if(type == 'other')
+ 				{
+ 					$("#order-type-text").show()
+ 					$("#order-name").hide()
+ 					$("#order-name-text").show()
+ 					return
+ 				}
+ 				else
+ 				{
+ 					$("#order-type-text").hide()
+ 					$("#order-name").show()
+ 					$("#order-name-text").hide()
+ 				}
+ 				$("#order-name").html("<option value=''>Choose Item Name</option>");
+ 				for(var i=0;i<table_content_inventory.length;i++)
+ 				{
+ 					if(type == table_content_inventory[i]['item_type'])
+ 					{
+ 						var option = document.createElement("option");
+ 						option.value = table_content_inventory[i]['item_name']
+ 						option.innerHTML = table_content_inventory[i]['item_name'].toUpperCase()
+ 						$("#order-name").append(option)
  					}
  				}
  			});
@@ -429,10 +484,14 @@
 				<form>
 					<h2 class="text-warning">Place Order Request</h2>
 					<div class="form-group">
-						<input id="order-type" type="text" class="form-control" placeholder="Item Type">
+						<select id="order-type" class="form-control">
+						</select>
+						<input id="order-type-text" type="text" class="form-control" placeholder="Item Type">
 					</div>
 					<div class="form-group">
-						<input id="order-name" class="form-control" type="text" placeholder="Item Name">
+						<select id="order-name" class="form-control">
+						</select>
+						<input id="order-name-text" class="form-control" type="text" placeholder="Item Name">
 					</div>
 					<div class="form-group">
 						<input id="order-qaunt" class="form-control" type="number" placeholder="Quantity"></input>	
